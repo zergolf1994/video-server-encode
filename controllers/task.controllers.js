@@ -1,3 +1,5 @@
+const shell = require("shelljs");
+
 const { EncodeModel } = require("../models/encode.models");
 const { FileModel } = require("../models/file.models");
 const { getLocalServer } = require("../utils/server.utils");
@@ -46,11 +48,11 @@ exports.createTask = async (req, res) => {
     if (!saveDb?._id) throw new Error("Error");
 
     // คำสั่ง เพื่อดำเนินการ ส่งต่อไปยัง bash
-    /*shell.exec(
-      `sudo bash ${global.dir}/bash/download.sh ${fileId}`,
+    shell.exec(
+      `sudo bash ${global.dir}/bash/download.sh`,
       { async: false, silent: false },
       function (data) {}
-    );*/
+    );
 
     return res.json({ msg: "task create" });
   } catch (err) {
