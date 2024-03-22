@@ -32,5 +32,5 @@ echo "Downloaded"
 sleep 1
 
 #ส่งต่อไปยังประมวลผล
-#curl -s "http://${localhost}/encode/start?fileId=${1}" > /dev/null
+curl -s "http://${localhost}/encode" > /dev/null
 exit 1

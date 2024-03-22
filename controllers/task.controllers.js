@@ -3,6 +3,8 @@ const shell = require("shelljs");
 const { EncodeModel } = require("../models/encode.models");
 const { FileModel } = require("../models/file.models");
 const { getLocalServer } = require("../utils/server.utils");
+const { MediaModel } = require("../models/media.models");
+const { ServerModel } = require("../models/server.models");
 
 exports.createTask = async (req, res) => {
   try {
@@ -25,9 +27,43 @@ exports.createTask = async (req, res) => {
     if (!server?._id) throw new Error("Server is busy");
 
     const file = await FileModel.findOne({
-      _id: fileId,
-      mimeType: { $ne: "folder" },
-      highest: { $gte: server?.options?.encode_video_resolution },
+      $and: [
+        //ไฟล์ต้นฉบับต้องไม่อยู่ที่เซิฟเวอร์อัพโหลด
+        {
+          _id: {
+            $nin: await MediaModel.distinct("fileId", {
+              quality: "default",
+              serverId: {
+                $in: await ServerModel.distinct("_id", {
+                  type: "upload",
+                }),
+              },
+            }),
+          },
+        },
+        //ต้องไม่มีไฟล์ ขนาด quality นี้แล้ว
+        {
+          _id: {
+            $nin: await MediaModel.distinct("fileId", {
+              quality: server?.options?.encode_video_resolution,
+            }),
+          },
+        },
+        //ต้องไม่มีไฟล์ ขนาด quality นี้ กำลังเข้ารหัส
+        {
+          _id: {
+            $nin: await EncodeModel.distinct("fileId", {
+              quality: server?.options?.encode_video_resolution,
+              type: "video",
+            }),
+          },
+        },
+        {
+          _id: fileId,
+          mimeType: { $ne: "folder" },
+          highest: { $gte: server?.options?.encode_video_resolution },
+        },
+      ],
     });
 
     if (!file) throw new Error("File not found");
@@ -176,23 +212,23 @@ exports.updateTask = async (req, res) => {
 };
 
 exports.cancleTask = async (req, res) => {
-    try {
-      const server = await getLocalServer();
-  
-      if (!server?._id) throw new Error("Server not found");
-  
-      const deleteDb = await EncodeModel.deleteMany({ serverId: server?._id });
-      if (!deleteDb.deletedCount) throw new Error("Encode not found");
-  
-      // คำสั่ง เพื่อดำเนินการ ส่งต่อไปยัง bash
-      shell.exec(
-        `sudo bash ${global.dir}/bash/cancle-encode.sh`,
-        { async: false, silent: false },
-        function (data) {}
-      );
-  
-      return res.json({ msg: "cancelled" });
-    } catch (err) {
-      return res.json({ error: true, msg: err?.message });
-    }
-  };
+  try {
+    const server = await getLocalServer();
+
+    if (!server?._id) throw new Error("Server not found");
+
+    const deleteDb = await EncodeModel.deleteMany({ serverId: server?._id });
+    if (!deleteDb.deletedCount) throw new Error("Encode not found");
+
+    // คำสั่ง เพื่อดำเนินการ ส่งต่อไปยัง bash
+    shell.exec(
+      `sudo bash ${global.dir}/bash/cancle-encode.sh`,
+      { async: false, silent: false },
+      function (data) {}
+    );
+
+    return res.json({ msg: "cancelled" });
+  } catch (err) {
+    return res.json({ error: true, msg: err?.message });
+  }
+};

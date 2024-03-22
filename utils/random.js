@@ -1,4 +1,5 @@
 const { FileModel } = require("../models/file.models");
+const { MediaModel } = require("../models/media.models");
 
 const dataChar = {
   uppercase: true,
@@ -32,6 +33,19 @@ exports.randomSlug = async (length = 8, options = { ...dataChar }) => {
   try {
     const slug = this.randomString(length, options);
     const count = await FileModel.countDocuments({ slug });
+    if (count > 0) {
+      return this.randomSlug(length + 1, options);
+    }
+    return slug;
+  } catch (error) {
+    return null;
+  }
+};
+
+exports.randomSlugVideo = async (length = 8, options = { ...dataChar }) => {
+  try {
+    const slug = this.randomString(length, options);
+    const count = await MediaModel.countDocuments({ slug });
     if (count > 0) {
       return this.randomSlug(length + 1, options);
     }

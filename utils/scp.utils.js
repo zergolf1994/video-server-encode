@@ -2,9 +2,10 @@ const path = require("path");
 const fs = require("fs-extra");
 const { Client } = require("node-scp");
 
-exports.SCPRemote = async ({ ssh, save_dir, file }) => {
+exports.SCPRemoteHLS = async ({ ssh, file }) => {
   try {
-    const local_file = path.join(global.dirPublic, "upload", file.file_name);
+    const local_file = file.file_convert;
+    const save_dir = file.remote_dir;
     if (!fs.existsSync(local_file)) throw new Error(`Local File Not found`);
     return new Promise(async function (resolve, reject) {
       Client(ssh)
