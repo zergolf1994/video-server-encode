@@ -67,6 +67,7 @@ exports.videoEncode = async (req, res) => {
           task: 1,
           quality: 1,
           percent: 1,
+          fileId: 1,
           file_name: 1,
           file_default: 1,
           file_output: 1,

@@ -2,6 +2,7 @@ localhost="127.0.0.1"
 data=$(curl -sLf "http://${localhost}/task/data" | jq -r ".")
 error=$(echo $data | jq -r ".error")
 
+
 if [[ $error == true ]]; then
     msg=$(echo $data | jq -r ".msg")
     echo "${msg}"
@@ -25,6 +26,7 @@ error_encode=$(echo $data_encode | jq -r ".error")
 if [[ $error_encode == true ]]; then
     msg_encode=$(echo $error_encode | jq -r ".msg")
     echo "${msg_encode}"
+    curl -s "http://${localhost}/task/cancle" > /dev/null
     exit 1
 fi
 echo "Converted"

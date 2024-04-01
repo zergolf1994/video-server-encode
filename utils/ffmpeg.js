@@ -2,6 +2,7 @@ const ffmpeg = require("fluent-ffmpeg");
 const path = require("path");
 const fs = require("fs-extra");
 const { taskUpdateDb } = require("./task.utils");
+const { ErrorModel } = require("../models/error.models");
 
 exports.get_video_info = async (url) => {
   try {
@@ -158,8 +159,14 @@ exports.encode_video = async (file) => {
         resolve({ msg: "converted" });
       });
       setup.on("error", async (err, stdout, stderr) => {
-        console.log(`err`,err);
-        resolve({ error: true, err });
+        
+        await ErrorModel.create({
+          quality: file.quality,
+          message: err?.message,
+          fileId: file.fileId,
+        });
+
+        resolve({ error: true, msg: err?.message });
       });
       setup.run();
     });

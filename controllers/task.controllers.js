@@ -5,6 +5,7 @@ const { FileModel } = require("../models/file.models");
 const { getLocalServer } = require("../utils/server.utils");
 const { MediaModel } = require("../models/media.models");
 const { ServerModel } = require("../models/server.models");
+const { ErrorModel } = require("../models/error.models");
 
 exports.createTask = async (req, res) => {
   try {
@@ -38,6 +39,14 @@ exports.createTask = async (req, res) => {
                   type: "upload",
                 }),
               },
+            }),
+          },
+        },
+        //ต้องไม่มี error convert
+        {
+          _id: {
+            $nin: await ErrorModel.distinct("fileId", {
+              fileId,
             }),
           },
         },
