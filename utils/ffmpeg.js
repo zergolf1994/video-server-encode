@@ -158,7 +158,7 @@ exports.encode_video = async (file) => {
         resolve({ msg: "converted" });
       });
       setup.on("error", async (err, stdout, stderr) => {
-        //console.log(`${data?.quality}P failed`);
+        console.log(`err`,err);
         resolve({ error: true, err });
       });
       setup.run();
